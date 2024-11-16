@@ -1,4 +1,4 @@
-**Comprehensive AI-Powered Menstrual Health and Pain Management System**
+# Comprehensive AI-Powered Menstrual Health and Pain Management System
 
 AI-driven solution to empower menstrual health management with cycle prediction, personalized health insights, disease detection, and pain management strategies.
 
@@ -9,7 +9,7 @@ Track and predict their menstrual cycles with precision.
 Gain personalized health insights and disease predictions.
 Access tailored pain management strategies.
 
-**📚 Features**
+__📚 Features__
 **Menstrual Cycle Prediction**:
 Predicts future cycles based on historical and lifestyle data using machine learning models like LSTMs and regression algorithms.
 
@@ -25,7 +25,7 @@ AI-powered chatbot generates tailored pain-relief strategies and actionable advi
 **Secure and Compliant**:
 Ensures data privacy and security compliance with HIPAA, GDPR, and healthcare standards.
 
-**🛠️ Technologies Used**
+__🛠️ Technologies Used__
 Frontend: React.js, React Native
 Backend: Node.js, Flask, Express.js
 Database: MongoDB
@@ -40,7 +40,7 @@ Response Time: < 2 seconds
 User Satisfaction: 90%+
 Data Security Compliance: 100% adherence to HIPAA/GDPR
 
-**🚀 How to Run Locally**
+__🚀 How to Run Locally__
 **Prerequisites:**
 Install Node.js, Python, and MongoDB.
 Clone the repository:
