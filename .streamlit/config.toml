@@ -1,0 +1,8 @@
+
+
+[theme]
+primaryColor = "#D0A2F7"          # Customize the primary button and widget color
+backgroundColor = "#DCBFFF"       # Background color of the app
+secondaryBackgroundColor = "" # Sidebar background color
+textColor = "#000000"             # Text color
+font = 'poppins'              # Optionally, change the font style
