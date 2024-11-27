@@ -5,6 +5,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from models import *
 from utils import *
+from scalers import *
 import google.generativeai as genai
 import streamlit as st
 from tensorflow.keras.models import load_model
@@ -21,6 +22,7 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 st.set_page_config(page_title="Health Assistant",
                    layout="wide",
                    page_icon="🧑‍⚕️")
+
 
 
 with st.sidebar:
@@ -203,49 +205,52 @@ if selected == "Parkinsons Prediction":
     col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
-        fo = st.text_input('MDVP:Fo (Hz)', placeholder='100-250 Hz')
-        RAP = st.text_input('MDVP:RAP', placeholder='0.0-0.5')
-        APQ3 = st.text_input('Shimmer:APQ3', placeholder='0.0-0.2')
-        HNR = st.text_input('HNR', placeholder='10-30')
-        D2 = st.text_input('D2', placeholder='1.0-4.0')
+        age = st.number_input('Age', min_value=0, max_value=120, value=40)  # Age as a numerical input
+        gender = gender_mapper(st.selectbox('Gender', ['Male', 'Female']))  # Gender as a dropdown (categorical)
+        tremor = yes_no_mapper(st.selectbox('Tremor', ['No', 'Yes']))  # Tremor as a dropdown (categorical)
+        slowness_of_movement = yes_no_mapper(st.selectbox('Slowness of Movement', ['No', 'Yes']))  # Slowness of Movement (categorical)
+        muscle_stiffness = yes_no_mapper(st.selectbox('Muscle Stiffness', ['No', 'Yes']))  # Muscle Stiffness (categorical)
 
+# Column 2: Balance Issues, Speech Problems, Depression, Anxiety
     with col2:
-        fhi = st.text_input('MDVP:Fhi (Hz)', placeholder='150-200 Hz')
-        PPQ = st.text_input('MDVP:PPQ', placeholder='0.0-0.1')
-        APQ5 = st.text_input('Shimmer:APQ5', placeholder='0.0-0.1')
-        RPDE = st.text_input('RPDE', placeholder='0.0-1.0')
-        PPE = st.text_input('PPE', placeholder='0.0-1.0')
+        balance_issues = yes_no_mapper(st.selectbox('Balance Issues', ['No', 'Yes']))  # Balance Issues (categorical)
+        speech_problems = yes_no_mapper(st.selectbox('Speech Problems', ['No', 'Yes']))  # Speech Problems (categorical)
+        depression = yes_no_mapper(st.selectbox('Depression', ['No', 'Yes']))  # Depression (categorical)
+        anxiety = yes_no_mapper(st.selectbox('Anxiety', ['No', 'Yes']))  # Anxiety (categorical)
+        sleep_problems = yes_no_mapper(st.selectbox('Sleep Problems', ['No', 'Yes']))  # Sleep Problems (categorical)
 
+# Column 3: Memory Problems, Fatigue, Walking Problems, Family History of Parkinson's
     with col3:
-        flo = st.text_input('MDVP:Flo (Hz)', placeholder='70-100 Hz')
-        DDP = st.text_input('Jitter:DDP', placeholder='0.0-0.02')
-        APQ = st.text_input('MDVP:APQ', placeholder='20-30')
-        DFA = st.text_input('DFA', placeholder='0.0-1.0')
+        memory_problems = yes_no_mapper(st.selectbox('Memory Problems', ['No', 'Yes']))  # Memory Problems (categorical)
+        fatigue = yes_no_mapper(st.selectbox('Fatigue', ['No', 'Yes']))  # Fatigue (categorical)
+        walking_problems =yes_no_mapper(st.selectbox('Walking Problems', ['No', 'Yes']))  # Walking Problems (categorical)
+        family_history_of_parkinsons = yes_no_mapper(st.selectbox('Family History of Parkinson\'s', ['No', 'Yes']))  # Family History (categorical)
+        handwriting_problems = yes_no_mapper(st.selectbox('Handwriting Problems', ['No', 'Yes']))  # Handwriting Problems (categorical)
 
+# Column 4: Loss of Smell, Dizziness, Unusual Sweating, Frequent Urination
     with col4:
-        Jitter_percent = st.text_input(
-            'MDVP:Jitter (%)', placeholder='0.0-0.1')
-        Shimmer = st.text_input('MDVP:Shimmer', placeholder='0.0-0.1')
-        DDA = st.text_input('Shimmer:DDA', placeholder='0.0-0.1')
-        spread1 = st.text_input('spread1', placeholder='-5.0 to 0.0')
+        loss_of_smell = yes_no_mapper(st.selectbox('Loss of Smell', ['No', 'Yes']))  # Loss of Smell (categorical)
+        dizziness = yes_no_mapper(st.selectbox('Dizziness', ['No', 'Yes']))  # Dizziness (categorical)
+        unusual_sweating = yes_no_mapper(st.selectbox('Unusual Sweating', ['No', 'Yes']))  # Unusual Sweating (categorical)
+        frequent_urination = yes_no_mapper(st.selectbox('Frequent Urination', ['No', 'Yes']))  # Frequent Urination (categorical)
+        low_blood_pressure = yes_no_mapper(st.selectbox('Low Blood Pressure', ['No', 'Yes']))  # Low Blood Pressure (categorical)
 
+# Column 5: Weight Loss, Difficulty Swallowing
     with col5:
-        Jitter_Abs = st.text_input('MDVP:Jitter (Abs)', placeholder='0.0-0.1')
-        Shimmer_dB = st.text_input('MDVP:Shimmer (dB)', placeholder='0.0-1.0')
-        NHR = st.text_input('NHR', placeholder='0.0-0.1')
-        spread2 = st.text_input('spread2', placeholder='0.0-1.0')
+        weight_loss = yes_no_mapper(st.selectbox('Weight Loss', ['No', 'Yes']))  # Weight Loss (categorical)
+        difficulty_swallowing = yes_no_mapper(st.selectbox('Difficulty Swallowing', ['No', 'Yes']))
 
     parkinsons_diagnosis = ''
 
     if st.button("Parkinson's Test Result"):
 
-        user_input = [fo, fhi, flo, Jitter_percent, Jitter_Abs,
-                      RAP, PPQ, DDP, Shimmer, Shimmer_dB, APQ3, APQ5,
-                      APQ, DDA, NHR, HNR, RPDE, DFA, spread1, spread2, D2, PPE]
+        user_input = [age, gender, tremor, slowness_of_movement, muscle_stiffness, balance_issues, speech_problems, depression, anxiety,sleep_problems, memory_problems, fatigue,walking_problems,family_history_of_parkinsons,handwriting_problems,loss_of_smell, dizziness,unusual_sweating, frequent_urination,low_blood_pressure,weight_loss, difficulty_swallowing]
 
         user_input = [float(x) for x in user_input]
 
-        parkinsons_prediction = parkinsons_model.predict([user_input])
+        user_input = parkinsons_scaler.transform([user_input])
+        
+        parkinsons_prediction = parkinsons_model.predict(user_input)
 
         if parkinsons_prediction[0] == 1:
             parkinsons_diagnosis = "The person has Parkinson's disease"
@@ -259,118 +264,37 @@ if selected == 'Polycystic Ovarian Syndrome':
 
     st.title('Polycystic Ovarian Syndrome Prediction')
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
-        age = st.text_input(placeholder='1-100', label='Age (in years)')
-        weight = st.text_input('Weight (in kilograms)', placeholder='45-150')
-        height = st.text_input('Height (in centimeters)',
-                               placeholder='150-190')
-        skin_darkening = yes_no_mapper(st.selectbox(
-            'Skin Darkening',
-            options=['Yes', 'No'],
-            index=0
-        ))
-        hair_loss = yes_no_mapper(st.selectbox(
-            'Hair loss',
-            options=['Yes', 'No'],
-            index=0
-        ))
-       
+        bmi = st.text_input('BMI', placeholder='18.5-40.0')
+        fatigue_levels = category_mapper(st.selectbox('Fatigue Levels', ['Low', 'Moderate', 'High'], index=0))
+        headaches = category_mapper(st.selectbox('Headaches', ['Rarely', 'Occasionally', 'Frequently'], index=0))
+        urinary_issues = yes_no_mapper(st.selectbox('Urinary Issues', ['Yes', 'No'], index=0))
+
 
     with col2:
-        cycle = st.text_input('Cycle Regular/Irregular (R/I)',
-                              placeholder='Regular or Irregular')
-        cycle_length = st.text_input(
-            'Cycle Length (in days)', placeholder='21-35')
-        pimples = yes_no_mapper(st.selectbox(
-            'Pimples',
-            options=['Yes', 'No'],
-            index=0
-        ))
-        endometrium = st.text_input(
-            'Endometrium Thickness (in mm)', placeholder='5-15')
-        
-        avg_f_size_l = st.text_input(
-            'Average Follicle Size (Left in mm)', placeholder='5-20')
-       
+        fertility_status = yes_no_mapper(st.selectbox('Fertility Status', ['Yes', 'No'], index=0))
+        sleep_apnea = yes_no_mapper(st.selectbox('Sleep Apnea', ['Yes', 'No'], index=0))
+        family_history = yes_no_mapper(st.selectbox('Family History', ['Yes', 'No'], index=0))
+        palpitations = category_mapper(st.selectbox('Palpitations', ['Rarely', 'Occasionally', 'Frequently'], index=0))
+
 
     with col3:
-        pregnant = yes_no_mapper(st.selectbox(
-            'Pregnant',
-            options=['Yes', 'No'],
-            index=0
-        ))
-        abortions = st.text_input('Number of Abortions', placeholder='0-10')
-        fsh = st.text_input(
-            'Follicle Stimulating Hormone ', placeholder='1-12')
-        lh = st.text_input('Luteinizing Hormone (mIU/mL)', placeholder='1-25')
-       
-        bp_systolic = st.text_input(
-            'Systolic Blood Pressure (mmHg)', placeholder='90-180')
-
-    with col4:
-        tsh = st.text_input(
-            'Thyroid Stimulating Hormone', placeholder='0.5-4.5')
-        amh = st.text_input(
-            'Anti-Mullerian Hormone (ng/mL)', placeholder='0.1-10')
-        prl = st.text_input('Prolactin (PRL in ng/mL)', placeholder='5-25')
-        bp_diastolic = st.text_input(
-            'Diastolic Blood Pressure (mmHg)', placeholder='60-100')
-        follicle_no_l = st.text_input(
-            'Number of Follicles (Left)', placeholder='0-30')
-
-    with col5:
-        vit_d3 = st.text_input('Vitamin D3 (in ng/mL)', placeholder='20-100')
-        prg = st.text_input('Progesterone (PRG in ng/mL)',
-                            placeholder='0.1-20')
-        rbs = st.text_input('Random Blood Sugar (in mg/dL)',
-                            placeholder='70-200')
-        weight_gain = yes_no_mapper(st.selectbox(
-            'Weight Gain',
-            options=['Yes', 'No'],
-            index=0
-        ))
-        hair_growth = yes_no_mapper(st.selectbox(
-            'Excess Hair Growth',
-            options=['Yes', 'No'],
-            index=0
-        ))
+        vision_problems = yes_no_mapper(st.selectbox('Vision Problems', ['Yes', 'No'], index=0))
+        mood_disorders = category_mapper(st.selectbox('Mood Disorders', ['None', 'Mild', 'Severe'], index=0))
 
     outcome = ''
 
     if st.button('Test Results'):
         user_input = [
-            age,
-            weight,
-            height,
-            cycle,
-            cycle_length,
-            pregnant,
-            abortions,
-            fsh,
-            lh,
-            tsh,
-            amh,
-            prl,
-            vit_d3,
-            prg,
-            rbs,
-            weight_gain,
-            hair_growth,
-            skin_darkening,
-            hair_loss,
-            pimples,
-            bp_systolic,
-            bp_diastolic,
-            follicle_no_l,
-            avg_f_size_l,
-            endometrium
+           bmi, fatigue_levels, headaches, urinary_issues, fertility_status, sleep_apnea, family_history, palpitations,vision_problems, mood_disorders
         ]
 
         user_input = [float(x) for x in user_input]
 
-        predict = pco_model.predict([user_input])
+        user_input = pcos_scaler.transform([user_input])
+        predict = pco_model.predict(user_input)
 
         if predict[0] == 1:
             outcome = 'The person has Polycystic Ovarian Syndrome'
@@ -383,7 +307,7 @@ if selected == 'Polycystic Ovarian Syndrome':
 if selected == 'Next Cycle Predictor':
     st.title('Next Cycle Prediction')
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3 = st.columns(3)
 
     reproductive_categories = [
         'Adolescent',
@@ -401,105 +325,57 @@ if selected == 'Next Cycle Predictor':
         }
         return mapping.get(value, None)
 
-    with col1:
-        CycleNumber = st.number_input('Cycle Number (e.g., 1)', 0)
-        CycleWithPeakorNot = yes_no_mapper(st.selectbox(
-            'Cycle With Peak or Not',
-            options=['Yes', 'No'],
-            index=0
-        ))
-        ReproductiveCategory = reproductive_category_mapper(st.selectbox(
-            'Reproductive Category',
-            options=reproductive_categories,
-            index=0
-        ))
-        user_date = st.date_input('Date')
-
+    with col1: 
+        Sleeping_Hours = st.number_input('Sleeping Hours (4-10)', min_value=4, max_value=10) 
+        Habits = category_mapper(st.selectbox( 'Habits', options=['No drinking/smoking', 'Smoking', 'Alcohol'], index=0 )) 
+        Stress_Level = st.number_input( 'Stress Level (1-5)', min_value=1, max_value=5) 
+        Activity_Level = st.number_input('Activity Level (1-5)', min_value=1, max_value=5)
+        user_date = st.date_input('Date') 
     with col2:
-        EstimatedDayofOvulation = st.number_input(
-            'Day of Ovulation (1-30)', min_value=1, max_value=30)
-        LengthofLuteatPhase = st.number_input(
-            'Luteal Phase (1-20 days)', min_value=1, max_value=20)
-        FirstDayofHigh = st.number_input(
-            'First Day of High (1-30)', min_value=1, max_value=30)
-        TotatNumberofHighDays = st.number_input(
-            'Total Number of High Days (1-20)', min_value=1, max_value=20)
-
+        Mood_Swings = st.number_input('Mood Swings (0-5)', min_value=0, max_value=5) 
+        Diet_Quality = st.number_input('Diet Quality (1-5)', min_value=1, max_value=5) 
+        Water_Intake = st.number_input('Water Intake (1-4 liters)', min_value=1.0, max_value=4.0) 
+        Menstrual_Flow_Intensity = st.number_input('Menstrual Flow Intensity (1-3)', min_value=1, max_value=3)
     with col3:
-        TotatHighPostPeak = st.number_input(
-            'Total High Post Peak (0)', min_value=0)
-        TotatDaysofFertitity = st.number_input(
-            'Total Days of Fertility (1-30)', min_value=1, max_value=30)
-        TotatNumberofPeakDays = st.number_input(
-            'Total Number of Peak Days (1-20)', min_value=1, max_value=20)
-        TotatFertitityFormuta = st.number_input(
-            'Total Fertility Formula (1-15)', min_value=1, max_value=15)
-
-    with col4:
-        MensesScoreDayOne = st.number_input(
-            'Menses Score Day One (0-10)', min_value=0, max_value=10)
-        MensesScoreDayTwo = st.number_input(
-            'Menses Score Day Two (0-10)', min_value=0, max_value=10)
-        MensesScoreDayThree = st.number_input(
-            'Menses Score Day Three (0-10)', min_value=0, max_value=10)
-        MensesScoreDayFour = st.number_input(
-            'Menses Score Day Four (0-10)', min_value=0, max_value=10)
-        MensesScoreDayFive = st.number_input(
-            'Menses Score Day Five (0-10)', min_value=0, max_value=10)
-
-    with col5:
-        LengthofMenses = st.number_input(
-            'Length of Menses (1-14 days)', min_value=1, max_value=14)
-        TotatMensesScore = st.number_input(
-            'Total Menses Score (0-30)', min_value=0, max_value=30)
-        NumberofDaysofIntercourse = st.number_input(
-            'Days of Intercourse (0-30)', min_value=0, max_value=30)
-
-        IntercourseInFertileWindow = yes_no_mapper(st.selectbox(
-            'Intercourse In Fertile Window',
-            options=['Yes', 'No'],
-            index=0
-        ))
+        bmi = st.number_input('BMI (18-30)', min_value=18.0, max_value=30.0) 
+        Daily_Step_Count = st.number_input('Daily Step Count (2000-15000)', min_value=2000, max_value=15000) 
+        Cycle_Regularity = yes_no_mapper(st.selectbox( 'Cycle Regularity', options=['Yes', 'No'], index=0 )) 
+        Hormonal_Medication = yes_no_mapper(st.selectbox( 'Hormonal Medication', options=['Yes', 'No'], index=0 ))
        
 
 
     if st.button('Predict Date'):
         user_input = [
-            CycleNumber,
-            CycleWithPeakorNot,
-            ReproductiveCategory,
-            EstimatedDayofOvulation,
-            LengthofLuteatPhase,
-            FirstDayofHigh,
-            TotatNumberofHighDays,
-            TotatHighPostPeak,
-            TotatDaysofFertitity,
-            TotatNumberofPeakDays,
-            TotatFertitityFormuta,
-            LengthofMenses,
-            MensesScoreDayOne,
-            MensesScoreDayTwo,
-            MensesScoreDayThree,
-            MensesScoreDayFour,
-            MensesScoreDayFive,
-            TotatMensesScore,
-            NumberofDaysofIntercourse,
-            IntercourseInFertileWindow
+           Sleeping_Hours,
+           Habits,
+           Stress_Level,
+           Activity_Level,
+           Mood_Swings,
+           Diet_Quality,
+           Water_Intake,
+           Menstrual_Flow_Intensity,
+           bmi,
+           Daily_Step_Count,
+           Cycle_Regularity,
+           Hormonal_Medication
         ]
 
         user_input = [float(x) for x in user_input]
 
-        predict_date = cycle_model.predict([user_input])
+        user_input = next_cycle_scaler.transform([user_input])
+        predict_date = cycle_model.predict(user_input)
 
-        predict_usual = ususal_model.predict([user_input])
 
-        st.success("Next Expected Cycle on : " +
-                   add_days_to_date(user_date, predict_date))
+        
 
-        if predict_usual == 0:
+        if predict_date[0][0] < 30:
             st.success("ususal")
+            st.success("Next Expected Cycle on : " +
+                   add_days_to_date(user_date, predict_date[0][0]))
         else:
             st.error("unsual")
+            st.error("Next Expected Cycle on : " +
+                   add_days_to_date(user_date, predict_date[0][0]))
 
 
 
